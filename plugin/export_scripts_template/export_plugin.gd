@@ -2,7 +2,7 @@
 extends EditorPlugin
 
 # A class member to hold the editor export plugin during its lifecycle.
-var export_plugin : AndroidExportPlugin
+var export_plugin: AndroidExportPlugin
 
 func _enter_tree():
 	# Initialization of the plugin goes here.
@@ -18,7 +18,7 @@ func _exit_tree():
 
 class AndroidExportPlugin extends EditorExportPlugin:
 	# TODO: Update to your plugin's name.
-	var _plugin_name = "GodotAndroidPluginTemplate"
+	var _plugin_name = "GodotAndroidOAuth2"
 
 	func _supports_platform(platform):
 		if platform is EditorExportPlatformAndroid:
@@ -34,9 +34,21 @@ class AndroidExportPlugin extends EditorExportPlugin:
 	func _get_android_dependencies(platform, debug):
 		# TODO: Add remote dependices here.
 		if debug:
-			return PackedStringArray([])
+			return PackedStringArray([
+				"androidx.credentials:credentials:1.5.0",
+				"androidx.credentials:credentials-play-services-auth:1.5.0",
+				"com.google.android.libraries.identity.googleid:googleid:1.1.1",
+				"org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3",
+				"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
+			])
 		else:
-			return PackedStringArray([])
+			return PackedStringArray([
+				"androidx.credentials:credentials:1.5.0",
+				"androidx.credentials:credentials-play-services-auth:1.5.0",
+				"com.google.android.libraries.identity.googleid:googleid:1.1.1",
+				"org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3",
+				"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
+			])
 
 	func _get_name():
 		return _plugin_name
