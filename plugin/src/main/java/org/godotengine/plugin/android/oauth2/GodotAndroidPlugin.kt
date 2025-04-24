@@ -1,8 +1,6 @@
 package org.godotengine.plugin.android.oauth2
 
-import android.content.Intent
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
@@ -10,7 +8,6 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.GetCredentialException
-import androidx.lifecycle.lifecycleScope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -23,6 +20,7 @@ import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.SignalInfo
 import org.godotengine.godot.plugin.UsedByGodot
+import java.util.UUID
 
 class GodotAndroidPlugin(godot: Godot): GodotPlugin(godot) {
     // Class-level properties
@@ -31,13 +29,6 @@ class GodotAndroidPlugin(godot: Godot): GodotPlugin(godot) {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun getPluginName() = BuildConfig.GODOT_PLUGIN_NAME
-
-    override fun onMainCreate(activity: android.app.Activity): View? {
-        super.onMainCreate(activity)
-        // Initialize the CredentialManager
-        credentialManager = CredentialManager.create(activity.applicationContext)
-        return super.onMainCreate(activity)
-    }
 
     /**
      * Example showing how to declare a method that's used by Godot.
@@ -52,6 +43,13 @@ class GodotAndroidPlugin(godot: Godot): GodotPlugin(godot) {
         }
     }
 
+    @UsedByGodot
+    fun testSignIn(webClientId: String): Boolean {
+        Log.d(TAG, "testSignIn called with client ID: $webClientId")
+        // Simplified implementation
+        return true
+    }
+
     /**
      * Signs in with Google using the Credential Manager API
      * This uses the bottom sheet UI for credential selection
@@ -63,28 +61,21 @@ class GodotAndroidPlugin(godot: Godot): GodotPlugin(godot) {
      * @return A boolean indicating if the sign-in process was started successfully
      */
     @UsedByGodot
-    fun signInWithGoogle(webClientId: String, filterByAuthorizedAccounts: Boolean, 
-                         enableAutoSelect: Boolean, nonce: String?): Boolean {
+    fun signInWithGoogle(webClientId: String): Boolean {
+        Log.d(TAG, "signInWithGoogle called with client ID: $webClientId")
         try {
-            // Create the Google ID Option
-            val googleIdOptionBuilder = GetGoogleIdOption.Builder()
-                .setFilterByAuthorizedAccounts(filterByAuthorizedAccounts)
+            credentialManager = CredentialManager.create(activity!!.applicationContext)
+            
+            val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
                 .setServerClientId(webClientId)
-                .setAutoSelectEnabled(enableAutoSelect)
-            
-            // Add nonce if provided
-            if (!nonce.isNullOrEmpty()) {
-                googleIdOptionBuilder.setNonce(nonce)
-            }
-            
-            val googleIdOption = googleIdOptionBuilder.build()
-            
+                .build()
+
             // Create the credential request
-            val request = GetCredentialRequest.Builder()
+            val request: GetCredentialRequest = GetCredentialRequest.Builder()
                 .addCredentialOption(googleIdOption)
                 .build()
-            
-            // Launch the authentication flow
+
             coroutineScope.launch {
                 try {
                     val result = credentialManager.getCredential(
@@ -114,17 +105,20 @@ class GodotAndroidPlugin(godot: Godot): GodotPlugin(godot) {
      * @return A boolean indicating if the sign-in process was started successfully
      */
     @UsedByGodot
-    fun showSignInWithGoogleButton(webClientId: String, nonce: String?): Boolean {
+    fun showSignInWithGoogleButton(webClientId: String): Boolean {
+        Log.d(TAG, "signInWithGoogle called with client ID: $webClientId")
+
         try {
+            Log.d(TAG, "Starting sign-in coroutine")
             // Create the Sign In With Google Option
             val signInWithGoogleOptionBuilder = GetSignInWithGoogleOption.Builder(
                 serverClientId = webClientId
             )
             
             // Add nonce if provided
-            if (!nonce.isNullOrEmpty()) {
-                signInWithGoogleOptionBuilder.setNonce(nonce)
-            }
+            // if (!nonce.isNullOrEmpty()) {
+            //     signInWithGoogleOptionBuilder.setNonce(nonce)
+            // }
             
             val signInWithGoogleOption = signInWithGoogleOptionBuilder.build()
             
@@ -167,31 +161,12 @@ class GodotAndroidPlugin(godot: Godot): GodotPlugin(godot) {
                     try {
                         // Extract the Google ID Token credential
                         val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                        
+
                         // Get the ID token
                         val idToken = googleIdTokenCredential.idToken
-                        
-                        // Create a dictionary to return to Godot
-                        val resultDict = Dictionary()
-                        resultDict.put("success", true)
-                        resultDict.put("id_token", idToken)
-                        
-                        // Optional: Extract additional profile info if needed
-                        googleIdTokenCredential.displayName?.let {
-                            resultDict.put("display_name", it)
-                        }
-                        googleIdTokenCredential.profilePictureUri?.let {
-                            resultDict.put("profile_picture_uri", it.toString())
-                        }
-                        googleIdTokenCredential.givenName?.let {
-                            resultDict.put("given_name", it)
-                        }
-                        googleIdTokenCredential.id.let {
-                            resultDict.put("id", it)
-                        }
-                        
+                        Log.e(TAG, "ID Token Length: ${idToken.length}")
                         // Emit signal with the result
-                        emitSignal("authentication_completed", resultDict)
+                        emitSignal("authentication_completed", idToken)
                     } catch (e: GoogleIdTokenParsingException) {
                         Log.e(TAG, "Invalid Google ID token: ${e.localizedMessage}")
                         emitSignal("authentication_failed", "Invalid Google ID token")
@@ -240,7 +215,7 @@ class GodotAndroidPlugin(godot: Godot): GodotPlugin(godot) {
      */
     override fun getPluginSignals(): Set<SignalInfo> {
         val signals = mutableSetOf<SignalInfo>()
-        signals.add(SignalInfo("authentication_completed", Dictionary::class.java))
+        signals.add(SignalInfo("authentication_completed", String::class.java))
         signals.add(SignalInfo("authentication_failed", String::class.java))
         signals.add(SignalInfo("sign_out_completed"))
         signals.add(SignalInfo("sign_out_failed", String::class.java))

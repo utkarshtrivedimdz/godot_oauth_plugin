@@ -35,16 +35,16 @@ class AndroidExportPlugin extends EditorExportPlugin:
 		# TODO: Add remote dependices here.
 		if debug:
 			return PackedStringArray([
-				"androidx.credentials:credentials:1.5.0",
-				"androidx.credentials:credentials-play-services-auth:1.5.0",
+				"androidx.credentials:credentials:1.3.0",
+				"androidx.credentials:credentials-play-services-auth:1.3.0",
 				"com.google.android.libraries.identity.googleid:googleid:1.1.1",
 				"org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3",
 				"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
 			])
 		else:
 			return PackedStringArray([
-				"androidx.credentials:credentials:1.5.0",
-				"androidx.credentials:credentials-play-services-auth:1.5.0",
+				"androidx.credentials:credentials:1.3.0",
+				"androidx.credentials:credentials-play-services-auth:1.3.0",
 				"com.google.android.libraries.identity.googleid:googleid:1.1.1",
 				"org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3",
 				"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"

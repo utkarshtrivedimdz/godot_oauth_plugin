@@ -13,7 +13,7 @@ val pluginPackageName = "org.godotengine.plugin.android.oauth2"
 
 android {
     namespace = pluginPackageName
-    compileSdk = 35
+    compileSdk = 34
 
     buildFeatures {
         buildConfig = true
@@ -40,9 +40,8 @@ android {
 dependencies {
     implementation("org.godotengine:godot:4.3.0.stable")
     // TODO: Additional dependencies should be added to export_plugin.gd as well.
-    implementation("androidx.credentials:credentials:1.5.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
-    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
